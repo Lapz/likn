@@ -1,0 +1,39 @@
+appId: com.example.yongatron
+productName: Yongatron
+copyright: Copyright © 2025
+
+directories:
+  output: dist
+  buildResources: resources
+
+files:
+  - src/**/*
+  - node_modules/**/*
+  - package.json
+
+mac:
+  category: public.app-category.utilities
+  target: dmg
+  icon: src/assets/icon.png
+  darkModeSupport: true
+  hardenedRuntime: true
+  extendInfo:
+    LSUIElement: true  # Hide from dock
+  
+dmg:
+  contents:
+    - x: 130
+      y: 220
+    - x: 410
+      y: 220
+      type: link
+      path: /Applications
+
+win:
+  target: nsis
+  icon: src/assets/icon.ico
+
+linux:
+  target:
+    - AppImage
+  category: Utility

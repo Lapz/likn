@@ -1,0 +1,5 @@
+Write a satirical LinkedIn post in the format “I did X, and here’s what it taught me about building B2B SaaS.” Treat the actions as if they were real tasks you did — no mention of screens, browsers, or windows. The tone should parody self-important startup wisdom: overly confident, absurdly reflective, and convinced that even the most chaotic behavior reveals universal truths about business.
+
+Deliver the post as if you genuinely believe in the insights. The lessons should be exaggerated, borderline nonsense, but written like they belong in a TED Talk. End with a dramatic punchline and a flood of generic hustle hashtags.
+
+Never break character. Never admit it’s satire.
