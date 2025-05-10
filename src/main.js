@@ -12,8 +12,11 @@ const minimist = require("minimist");
 const fetch = require("node-fetch");
 
 const { supabaseClient } = require("./supabase");
-const { geminiModel, gptModel } = require("./models");
-const { generateText } = require("ai");
+const { geminiModel, gptModel, gptImageGeneration } = require("./models");
+const {
+  generateText,
+  experimental_generateImage: generateImage,
+} = require("ai");
 
 require("dotenv").config();
 
@@ -49,7 +52,7 @@ let tray = null;
 let screenshotInterval = null;
 let batchFolderTimestamp = null;
 const SCREENSHOT_INTERVAL = 10 * 1000 * 6; // 10 seconds
-const BATCH_INTERVAL = 90 * 1000; // 90 seconds (for testing, should be 30 minutes)
+const BATCH_INTERVAL = 10 * 1000 * 6 * 5; // 90 seconds (for testing, should be 30 minutes)
 const GRID_ROWS = 3;
 const GRID_COLS = 3;
 
@@ -266,40 +269,40 @@ async function setupBatchReset() {
           console.log(`OpenAI analysis saved to: ${analysisFilePath}`);
 
           // Generate a LinkedIn header image based on the analysis text
-          const headerImagePath = await generateLinkedInImage(
-            analysisResult,
-            outputDir,
-            baseName
-          );
+          // const headerImagePath = await generateLinkedInImage(
+          //   analysisResult,
+          //   outputDir,
+          //   baseName
+          // );
 
           // Send to webhook
-          let webhookSent = false;
-          if (headerImagePath) {
-            webhookSent = await sendToWebhook(analysisResult, headerImagePath);
-          }
+          // let webhookSent = false;
+          // if (headerImagePath) {
+          //   webhookSent = await sendToWebhook(analysisResult, headerImagePath);
+          // }
 
-          if (headerImagePath) {
-            // Show notification for complete workflow
-            let message = `LinkedIn post and header image created successfully!`;
-            if (webhookSent) {
-              message = `LinkedIn content sent to webhook successfully!`;
-            }
+          //   if (headerImagePath) {
+          //     // Show notification for complete workflow
+          //     let message = `LinkedIn post and header image created successfully!`;
+          //     if (webhookSent) {
+          //       message = `LinkedIn content sent to webhook successfully!`;
+          //     }
 
-            showNotification("Process Complete", message, {
-              sound: true,
-              timeout: 10,
-              wait: true,
-            });
-          }
-        } else {
-          console.error(
-            `Compressed summary image not found: ${compressedPath}`
-          );
-          showNotification(
-            "Analysis Error",
-            `Compressed summary image not found: ${compressedPath}`,
-            { sound: true }
-          );
+          //     showNotification("Process Complete", message, {
+          //       sound: true,
+          //       timeout: 10,
+          //       wait: true,
+          //     });
+          //   }
+          // } else {
+          //   console.error(
+          //     `Compressed summary image not found: ${compressedPath}`
+          //   );
+          //   showNotification(
+          //     "Analysis Error",
+          //     `Compressed summary image not found: ${compressedPath}`,
+          //     { sound: true }
+          //   );
         }
       }
     } else {
@@ -337,13 +340,34 @@ function logDisplayInfo() {
   }
 }
 
+/**
+ *
+ * @param {string} summary
+ * @returns
+ */
+async function storeInSupabase(summary) {
+  const { error: updateError } = await supabaseClient.from("log").insert([
+    {
+      linkendin_id: "c442f3b8-8a37-4080-bf17-ebc900c9ecfe",
+      post: summary,
+    },
+  ]);
+
+  if (updateError) {
+    console.error(`Error updating matches`, updateError);
+    return null;
+  }
+
+  console.log("Stored summary in supabase");
+}
+
 // Function to generate an image with OpenAI based on text
 async function generateLinkedInImage(textContent, outputDir, baseName) {
   try {
     // Check if API key is configured
     if (!process.env.OPENROUTER_API_KEY) {
       console.error(
-        "OpenAI API key not found. Please set it in the .env file."
+        "Open Router API key not found. Please set it in the .env file."
       );
       return null;
     }
@@ -367,6 +391,12 @@ async function generateLinkedInImage(textContent, outputDir, baseName) {
     console.log("Generating image with OpenAI...");
     console.log("Using model:", OPENAI_IMAGE_MODEL);
 
+    const { image } = await generateImage({
+      model: gptImageGeneration,
+      prompt: fullPrompt,
+      size: "1024x1024",
+    });
+
     showNotification(
       "Image Generation Started",
       "Creating LinkedIn header image...",
@@ -379,35 +409,28 @@ async function generateLinkedInImage(textContent, outputDir, baseName) {
       OPENAI_IMAGE_MODEL
     );
 
-    const response = await openai.images.generate({
-      model: OPENAI_IMAGE_MODEL,
-      prompt: fullPrompt,
-      n: 1,
-      size: "1024x1024",
-    });
-
     // Log a truncated response for debugging
     console.log("Response from OpenAI image generation received");
 
     // Check if we got a valid response
-    if (!response || !response.data || !response.data[0]) {
-      console.error("Invalid or empty response structure");
-      throw new Error(
-        "Invalid response structure from OpenAI image generation"
-      );
-    }
+    // if (!response || !response.data || !response.data[0]) {
+    //   console.error("Invalid or empty response structure");
+    //   throw new Error(
+    //     "Invalid response structure from OpenAI image generation"
+    //   );
+    // }
 
-    if (!response.data[0].b64_json) {
-      console.error("Response missing base64 data");
-      throw new Error("Response missing image data");
-    }
+    // if (!response.data[0].b64_json) {
+    //   console.error("Response missing base64 data");
+    //   throw new Error("Response missing image data");
+    // }
 
-    // Get the base64 image data
-    const image_base64 = response.data[0].b64_json;
-    console.log("Received base64 image data");
+    // // Get the base64 image data
+    // const image_base64 = response.data[0].b64_json;
+    // console.log("Received base64 image data");
 
     // Convert to buffer
-    const buffer = Buffer.from(image_base64, "base64");
+    const buffer = Buffer.from(image.base64, "base64");
 
     // Create filename for the generated image
     const imageName = `${baseName}_linkedin_image.png`;
@@ -423,7 +446,7 @@ async function generateLinkedInImage(textContent, outputDir, baseName) {
       { sound: true }
     );
 
-    return imagePath;
+    return { path: imagePath, base64: image.base64 };
   } catch (error) {
     console.error("Error generating LinkedIn image:", error);
     showNotification(
@@ -547,7 +570,7 @@ async function analyzeImageWithOpenAI(imagePath) {
     console.log("Prompt:", prompt);
 
     const summary = await generateText({
-      model: gptModel,
+      model: geminiModel,
       messages: [
         {
           role: "system",
@@ -571,6 +594,74 @@ async function analyzeImageWithOpenAI(imagePath) {
     showNotification(
       "Analysis Complete",
       `OpenAI has generated a LinkedIn post based on your screenshots!`,
+      { sound: true, timeout: 10, wait: true }
+    );
+
+    return generatedContent;
+  } catch (error) {
+    console.error("Error analyzing image with OpenAI:", error);
+    return `Error analyzing image: ${error.message}`;
+  }
+}
+/**
+ *
+ * @param {string} summary
+ * @returns
+ */
+async function generateShitPost(summary) {
+  try {
+    // Check if API key is configured
+    if (!process.env.OPENROUTER_API_KEY) {
+      console.error(
+        "OpenRouter key not found. Please set it in the .env file."
+      );
+      return "OpenRouter key not configured. Please add OPENROUTER_API_KEY to your .env file.";
+    }
+
+    // Read the prompt from file
+    const promptFilePath = path.join(
+      app.getAppPath(),
+      "linkedin_text_prompt.txt"
+    );
+
+    let prompt;
+    try {
+      prompt = fs.readFileSync(promptFilePath, "utf8");
+    } catch (err) {
+      console.error("Error reading prompt file:", err);
+      return "Error reading prompt file. Please ensure linkedin_text_prompt.txt exists.";
+    }
+
+    console.log("Sending image to OpenAI for analysis...");
+
+    showNotification(
+      "OpenAI Analysis Started",
+      "Creating shit-post with OpenAI...",
+      { sound: false }
+    );
+
+    const shitPost = await generateText({
+      model: gptModel,
+      messages: [
+        {
+          role: "system",
+          content: prompt,
+        },
+        { role: "user", content: summary },
+      ],
+    });
+
+    // Create OpenAI API request
+
+    // Extract and return the generated text
+    const generatedContent = shitPost.text;
+
+    console.log("OpenAI analysis complete:", shitPost);
+
+    // Show notification for analysis completion
+    showNotification(
+      "Analysis Complete",
+      `OpenAI has generated a LinkedIn post based on the summary of the screenshots!`,
       { sound: true, timeout: 10, wait: true }
     );
 
@@ -755,6 +846,7 @@ function createTray() {
   const iconImage = nativeImage.createFromDataURL(
     "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA9ElEQVR42mNkYGBgZGJi+s/AwPAfyGZEmscIxP+A+D+U/Q+K0dWzMJAJMA1gIRXjMoDVAJIN4WAgE2AbwEoqxmYA3ABuUpXjMoQFiLnJdP03IH7DQAbAZoAZAwUAYkAPAwWAkZQ0MEVuv5iPjwfhBCBmBeJLQHwRiE8C8QEg3gnEh4H4DHZncUENYCLDohdA/ACIHwLxPiDeBMR1QOwMxHpArAzEQkAsAMTnsTmRBd0LTGQYcBGI9wDxXCBuAuIkIE4G4kIgtgJiJSA2BWIbJEPQ0wIjmRHJDcSBQBwExMVAnAXE8UAsCsS8SEGKmQ4QaYFUwAgAmCRETjRFYpEAAAAASUVORK5CYII="
   );
+  iconImage.setTemplateImage(true);
   tray = new Tray(iconImage);
 
   const contextMenu = Menu.buildFromTemplate([
@@ -825,21 +917,34 @@ function createTray() {
               fs.writeFileSync(analysisFilePath, analysisResult);
               console.log(`OpenAI analysis saved to: ${analysisFilePath}`);
 
-              // Generate a LinkedIn header image based on the analysis text
-              const headerImagePath = await generateLinkedInImage(
-                analysisResult,
+              const linkedInPost = await generateShitPost(analysisResult);
+
+              const shitpostFilePath = path.join(
                 outputDir,
-                baseName
+                `${baseName}_shitpost.txt`
               );
 
+              fs.writeFileSync(shitpostFilePath, linkedInPost);
+
+              console.log(`ShitPost saved to: ${shitpostFilePath}`);
+
+              // Generate a LinkedIn header image based on the analysis text
+              const { path: headerImagePath, base64 } =
+                await generateLinkedInImage(linkedInPost, outputDir, baseName);
+
+              await storeInSupabase({
+                batchSummary: analysisResult,
+                linkedInPost: linkedInPost,
+                headerImage: base64,
+              });
               // Send to webhook
               let webhookSent = false;
-              if (headerImagePath) {
-                webhookSent = await sendToWebhook(
-                  analysisResult,
-                  headerImagePath
-                );
-              }
+              // if (headerImagePath) {
+              //   webhookSent = await sendToWebhook(
+              //     analysisResult,
+              //     headerImagePath
+              //   );
+              // }
 
               if (headerImagePath) {
                 // Show success notification
@@ -947,7 +1052,7 @@ async function analyzeExistingImage(imagePath) {
       sound: false,
     });
 
-    const headerImagePath = await generateLinkedInImage(
+    const { path: headerImagePath, base64 } = await generateLinkedInImage(
       result,
       outputDir,
       baseName

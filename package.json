@@ -16,6 +16,7 @@
   "license": "ISC",
   "description": "Background app that captures periodic screenshots",
   "dependencies": {
+    "@ai-sdk/openai": "^1.3.22",
     "@openrouter/ai-sdk-provider": "^0.4.5",
     "@supabase/supabase-js": "^2.49.4",
     "ai": "^4.3.15",
