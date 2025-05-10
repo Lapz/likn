@@ -10,6 +10,11 @@ const OpenAI = require("openai");
 const notifier = require("node-notifier");
 const minimist = require("minimist");
 const fetch = require("node-fetch");
+
+const { supabaseClient } = require("./supabase");
+const { geminiModel, gptModel } = require("./models");
+const { generateText } = require("ai");
+
 require("dotenv").config();
 
 // Parse command line arguments
@@ -43,7 +48,7 @@ if (process.platform === "darwin" && app.dock) {
 let tray = null;
 let screenshotInterval = null;
 let batchFolderTimestamp = null;
-const SCREENSHOT_INTERVAL = 10 * 1000; // 10 seconds
+const SCREENSHOT_INTERVAL = 10 * 1000 * 6; // 10 seconds
 const BATCH_INTERVAL = 90 * 1000; // 90 seconds (for testing, should be 30 minutes)
 const GRID_ROWS = 3;
 const GRID_COLS = 3;
@@ -53,7 +58,7 @@ const ENABLE_NOTIFICATIONS = true;
 
 // Initialize OpenAI client
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.OPENROUTER_API_KEY,
 });
 
 // OpenAI models to use
@@ -336,7 +341,7 @@ function logDisplayInfo() {
 async function generateLinkedInImage(textContent, outputDir, baseName) {
   try {
     // Check if API key is configured
-    if (!process.env.OPENAI_API_KEY) {
+    if (!process.env.OPENROUTER_API_KEY) {
       console.error(
         "OpenAI API key not found. Please set it in the .env file."
       );
@@ -505,18 +510,19 @@ async function sendToWebhook(textContent, imagePath) {
 async function analyzeImageWithOpenAI(imagePath) {
   try {
     // Check if API key is configured
-    if (!process.env.OPENAI_API_KEY) {
+    if (!process.env.OPENROUTER_API_KEY) {
       console.error(
-        "OpenAI API key not found. Please set it in the .env file."
+        "OpenRouter key not found. Please set it in the .env file."
       );
-      return "OpenAI API key not configured. Please add OPENAI_API_KEY to your .env file.";
+      return "OpenRouter key not configured. Please add OPENROUTER_API_KEY to your .env file.";
     }
 
     // Read the prompt from file
     const promptFilePath = path.join(
       app.getAppPath(),
-      "linkedin_text_prompt.txt"
+      "analyse_image_prompt.txt"
     );
+
     let prompt;
     try {
       prompt = fs.readFileSync(promptFilePath, "utf8");
@@ -540,29 +546,26 @@ async function analyzeImageWithOpenAI(imagePath) {
     console.log("OpenAI model:", OPENAI_MODEL);
     console.log("Prompt:", prompt);
 
-    // Create OpenAI API request
-    const response = await openai.chat.completions.create({
-      model: OPENAI_MODEL,
+    const summary = await generateText({
+      model: gptModel,
       messages: [
         {
+          role: "system",
+          content: prompt,
+        },
+        {
           role: "user",
-          content: [
-            { type: "text", text: prompt },
-            {
-              type: "image_url",
-              image_url: {
-                url: `data:image/jpeg;base64,${base64Image}`,
-                detail: "low", // Use low detail to reduce tokens
-              },
-            },
-          ],
+          content: [{ type: "image", image: base64Image }],
         },
       ],
     });
 
+    // Create OpenAI API request
+
     // Extract and return the generated text
-    const generatedContent = response.choices[0].message.content;
-    console.log("OpenAI analysis complete:", generatedContent);
+    const generatedContent = summary.text;
+
+    console.log("OpenAI analysis complete:", summary);
 
     // Show notification for analysis completion
     showNotification(

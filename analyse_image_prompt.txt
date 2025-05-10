@@ -1,0 +1,19 @@
+   You're analyzing tasks from a 30-minute work session 
+    
+    Here are the tasks detected from screenshots during this time period:
+
+    Your goal is to identify:
+    1. Completed tasks - Look for clear evidence that a task was started and then completed within this timeframe
+    2. Overall productivity patterns
+    3. Time allocation across different categories
+    4. Focus metrics and insights
+    
+    Pay special attention to:
+    - Changes in progress indicators (e.g., from "in progress" to "completed")
+    - Document submissions or closures
+    - Email completions
+    - Code commits or pushes
+    - Meeting attendances
+    - Any explicit markers of task completion
+    
+    Generate a structured analysis that accurately captures what the user accomplished during this 30-minute period.
