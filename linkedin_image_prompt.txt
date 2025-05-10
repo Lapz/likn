@@ -1,7 +1,28 @@
-Create a clean, visually polished digital illustration that captures the mindset of a hyper-confident tech founder who believes their everyday tasks hold deep strategic insights. The image should feel modern, intentional, and lightly exaggerated — not chaotic — with a tone that mirrors startup branding aesthetics: calm but intense, visionary but slightly off.
+Generate a highly stylized, surreal business-themed image that looks like a blend of a TEDx poster, a Web3 keynote slide, and a productivity app ad. 
 
-Use metaphorical elements to suggest themes like productivity, focus, startup ambition, or delusional clarity. Subtle absurdity is key — the image should feel like it belongs on a VC pitch deck at first glance, but something about it is just a bit too much.
+The visual should feature a lone glowing or silhouetted figure standing at the center of a vast digital landscape. The environment should include dramatic lighting, abstract data flows, neon gridlines, floating UI elements, cosmic mist, and subtle lens flares.
 
-Avoid literal text, screenshots, or UI. Think in visual symbols: glowing documents, infinite stairs, heroic lighting, floating dashboards, or someone staring meaningfully into a swirling void of KPIs.
+Color palette: deep purples, electric blues, soft pink neons, and tech-industry oranges.
 
-The goal: make it look like a serious portrait of startup enlightenment… if enlightenment came from doomscrolling and overanalyzing your to-do list.
+Incorporate symbolic elements like:
+- Triangles
+- Infinity loops
+- Floating stairs
+- Beams of light shooting into the sky
+- Subtle circuit board textures or scrolling binary
+
+The tone should feel prophetic, self-important, and absurdly inspirational — as if it’s about to reveal the secret to hustle, purpose, and entrepreneurial transcendence.
+
+Include optional overlay text in all caps, centered, glowing slightly. Example texts:
+- “BUILDING FROM WITHIN”
+- “I AM THE PRODUCT”
+- “NAVIGATE THE NOISE. BUILD THE SELF.”
+- “ZERO TO OMNISCALE”
+- “HUSTLE IS A FREQUENCY”
+- “DON’T DEPLOY. ASCEND.”
+
+Typography: Futuristic and clean (like Orbitron, Futura, or Helvetica Neue Bold).
+
+The final image should resemble a LinkedIn hustle-post graphic, crypto whitepaper cover, or an inspirational slide for a productivity cult conference. It should feel serious and meaningful — while ultimately being completely meaningless.
+
+The visual is for the LinkedIn post included in the user message.

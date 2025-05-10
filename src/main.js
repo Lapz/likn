@@ -10,12 +10,15 @@ const OpenAI = require("openai");
 const notifier = require("node-notifier");
 const minimist = require("minimist");
 const fetch = require("node-fetch");
+const open = require("open");
+const z = require("zod");
 
 const { supabaseClient } = require("./supabase");
 const { geminiModel, gptModel, gptImageGeneration } = require("./models");
 const {
   generateText,
   experimental_generateImage: generateImage,
+  generateObject,
 } = require("ai");
 
 require("dotenv").config();
@@ -51,8 +54,8 @@ if (process.platform === "darwin" && app.dock) {
 let tray = null;
 let screenshotInterval = null;
 let batchFolderTimestamp = null;
-const SCREENSHOT_INTERVAL = 10 * 1000 * 6; // 10 seconds
-const BATCH_INTERVAL = 10 * 1000 * 6 * 5; // 90 seconds (for testing, should be 30 minutes)
+const SCREENSHOT_INTERVAL = 10 * 1000; // 10 seconds
+const BATCH_INTERVAL = 10 * 1000 * 9; // 90 seconds (for testing, should be 30 minutes)
 const GRID_ROWS = 3;
 const GRID_COLS = 3;
 
@@ -60,11 +63,7 @@ const GRID_COLS = 3;
 const ENABLE_NOTIFICATIONS = true;
 
 // Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENROUTER_API_KEY,
-});
 
-// OpenAI models to use
 const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-4-vision-preview";
 const OPENAI_IMAGE_MODEL = process.env.OPENAI_IMAGE_MODEL || "gpt-image-1";
 
@@ -80,6 +79,10 @@ function showNotification(title, message, options = {}) {
     wait: options.wait || false, // Wait for user interaction
     timeout: options.timeout || 5, // Auto-close after 5 seconds by default
   });
+
+  if (options.callback) {
+    notifier.on("click", options.callback);
+  }
 }
 
 // Ensure app only has a single instance
@@ -203,11 +206,11 @@ async function takeScreenshot() {
       console.log(`Screenshot saved: ${filePath} (Source: ${source.id})`);
 
       // Show notification
-      showNotification(
-        "Screenshot Captured",
-        `Screen ${displayIndex} captured at ${moment().format("HH:mm:ss")}`,
-        { sound: false } // No sound for frequent screenshots
-      );
+      // showNotification(
+      //   "Screenshot Captured",
+      //   `Screen ${displayIndex} captured at ${moment().format("HH:mm:ss")}`,
+      //   { sound: false } // No sound for frequent screenshots
+      // );
     } else {
       throw new Error("No thumbnail available from the source");
     }
@@ -403,32 +406,6 @@ async function generateLinkedInImage(textContent, outputDir, baseName) {
       { sound: false }
     );
 
-    // Send request to OpenAI image generation API with gpt-image-1
-    console.log(
-      "Sending image generation request with model:",
-      OPENAI_IMAGE_MODEL
-    );
-
-    // Log a truncated response for debugging
-    console.log("Response from OpenAI image generation received");
-
-    // Check if we got a valid response
-    // if (!response || !response.data || !response.data[0]) {
-    //   console.error("Invalid or empty response structure");
-    //   throw new Error(
-    //     "Invalid response structure from OpenAI image generation"
-    //   );
-    // }
-
-    // if (!response.data[0].b64_json) {
-    //   console.error("Response missing base64 data");
-    //   throw new Error("Response missing image data");
-    // }
-
-    // // Get the base64 image data
-    // const image_base64 = response.data[0].b64_json;
-    // console.log("Received base64 image data");
-
     // Convert to buffer
     const buffer = Buffer.from(image.base64, "base64");
 
@@ -530,7 +507,7 @@ async function sendToWebhook(textContent, imagePath) {
 }
 
 // Function to analyze the batch summary image with OpenAI
-async function analyzeImageWithOpenAI(imagePath) {
+async function analyzeImageWithOpenAI(imagePath, retries = 1) {
   try {
     // Check if API key is configured
     if (!process.env.OPENROUTER_API_KEY) {
@@ -566,11 +543,8 @@ async function analyzeImageWithOpenAI(imagePath) {
       { sound: false }
     );
 
-    console.log("OpenAI model:", OPENAI_MODEL);
-    console.log("Prompt:", prompt);
-
     const summary = await generateText({
-      model: geminiModel,
+      model: gptModel,
       messages: [
         {
           role: "system",
@@ -600,6 +574,11 @@ async function analyzeImageWithOpenAI(imagePath) {
     return generatedContent;
   } catch (error) {
     console.error("Error analyzing image with OpenAI:", error);
+
+    if (retries >= 1) {
+      return analyzeImageWithOpenAI(imagePath, retries - 1);
+    }
+
     return `Error analyzing image: ${error.message}`;
   }
 }
@@ -640,8 +619,12 @@ async function generateShitPost(summary) {
       { sound: false }
     );
 
-    const shitPost = await generateText({
+    const shitPost = await generateObject({
       model: gptModel,
+      schema: z.object({
+        postFormat: z.string(),
+        postBody: z.string(),
+      }),
       messages: [
         {
           role: "system",
@@ -654,7 +637,7 @@ async function generateShitPost(summary) {
     // Create OpenAI API request
 
     // Extract and return the generated text
-    const generatedContent = shitPost.text;
+    const generatedContent = shitPost.object.postBody;
 
     console.log("OpenAI analysis complete:", shitPost);
 
@@ -811,7 +794,7 @@ async function createBatchSummary(batchTimestamp) {
     // Create a compressed JPEG version with reduced size
     try {
       // Define target size for compressed image (scale factor)
-      const scaleFactor = 0.5; // 50% of original size
+      const scaleFactor = 0.75; // 50% of original size
 
       // Calculate new dimensions
       const jpegWidth = Math.round(canvasWidth * scaleFactor);
@@ -823,7 +806,7 @@ async function createBatchSummary(batchTimestamp) {
 
       await sharp(pngBuffer)
         .resize(jpegWidth, jpegHeight)
-        .jpeg({ quality: 70 }) // Reduce quality to save space
+        .jpeg({ quality: 100 }) // Reduce quality to save space
         .toFile(gridJpegFilePath);
 
       console.log(`Compressed batch summary (JPEG) saved: ${gridJpegFilePath}`);
@@ -937,6 +920,7 @@ function createTray() {
                 linkedInPost: linkedInPost,
                 headerImage: base64,
               });
+
               // Send to webhook
               let webhookSent = false;
               // if (headerImagePath) {
@@ -953,11 +937,19 @@ function createTray() {
                   message = `LinkedIn content sent to webhook successfully!`;
                 }
 
-                showNotification("Process Complete", message, {
-                  sound: true,
-                  wait: true,
-                });
+                // showNotification("Process Complete", message, {
+                //   sound: true,
+                //   wait: true,
+                // });
               }
+
+              showNotification("Your shit post is ready", message, {
+                sound: true,
+                wait: true,
+                callback: () => {
+                  open("https://gemini.ovotech.org.uk");
+                },
+              });
 
               // Open the folder containing the generated content
               const { shell } = require("electron");
@@ -1047,6 +1039,12 @@ async function analyzeExistingImage(imagePath) {
       }
     );
 
+    const linkedInPost = await generateShitPost(result);
+
+    const shitpostFilePath = path.join(outputDir, `${baseName}_shitpost.txt`);
+
+    fs.writeFileSync(shitpostFilePath, linkedInPost);
+
     // Generate a LinkedIn header image based on the analysis text
     showNotification("Generating Image", "Creating LinkedIn header image...", {
       sound: false,
@@ -1058,11 +1056,17 @@ async function analyzeExistingImage(imagePath) {
       baseName
     );
 
+    await storeInSupabase({
+      batchSummary: result,
+      linkedInPost: linkedInPost,
+      headerImage: base64,
+    });
+
     // Send to webhook
     let webhookSent = false;
-    if (headerImagePath) {
-      webhookSent = await sendToWebhook(result, headerImagePath);
-    }
+    // if (headerImagePath) {
+    //   webhookSent = await sendToWebhook(result, headerImagePath);
+    // }
 
     if (headerImagePath) {
       // Show success notification
@@ -1071,11 +1075,23 @@ async function analyzeExistingImage(imagePath) {
         message = `LinkedIn content sent to webhook successfully!`;
       }
 
-      showNotification("Process Complete", message, {
+      // showNotification("Process Complete", message, {
+      //   sound: true,
+      //   wait: true,
+      // });
+    }
+
+    showNotification(
+      "We've recorded your activity",
+      "Click here to post about it",
+      {
         sound: true,
         wait: true,
-      });
-    }
+        callback: () => {
+          open("https://gemini.ovotech.org.uk");
+        },
+      }
+    );
 
     // Open the directory containing the files
     const { shell } = require("electron");

@@ -1,5 +1,101 @@
-Write a satirical LinkedIn post in the format “I did X, and here’s what it taught me about building B2B SaaS.” Treat the actions as if they were real tasks you did — no mention of screens, browsers, or windows. The tone should parody self-important startup wisdom: overly confident, absurdly reflective, and convinced that even the most chaotic behavior reveals universal truths about business.
+You are given a screenshot of the user's activity over a period of time, looking at things they have been working on. Create a satirical LinkedIn post that perfectly mimics the cringe, inflated, self-praising, pseudo-profound energy of “thoughtfluencers.” This should feel like a midlife crisis dressed up in KPIs. The first sentence should end with "here's what it taught me about B2B SaaS"
 
-Deliver the post as if you genuinely believe in the insights. The lessons should be exaggerated, borderline nonsense, but written like they belong in a TED Talk. End with a dramatic punchline and a flood of generic hustle hashtags.
+🚨 STEP 1: PICK YOUR FLAVOR OF DELUSION
+FORMAT 1: THE TOILET-BOWL TRANSFORMATION 🧻
+Open with: “I [completely mundane or humiliating personal event].”
 
-Never break character. Never admit it’s satire.
+Bridge with: “Most people wouldn’t see this as a metaphor for [business concept], but I did. 💡”
+
+Draw 3 to 5 hilariously strained analogies between the event and corporate leadership.
+
+Conclude with: “This is why I always say: [cringey aphorism that sounds made up].”
+
+FORMAT 2: THE EGO-MARTYR LOOP 🔁
+Begin with: “While others [normal human action], I [deranged hustle behavior].”
+
+Drop a sentence implying this is what separates legends from losers.
+
+Include a bizarre personal KPI (e.g., “averaged 4.6 epiphanies/hour for 72 straight hours”).
+
+Frame sleep, emotions, or family time as optional modules in the SuccessOS.
+
+End with: “That’s the price of playing chess while others are learning checkers. ♟️”
+
+FORMAT 3: THE “MY KID IS A VC” REFLECTION 👶
+Start with: “My 3-year-old said something today that changed how I think about funding rounds.”
+
+Quote the child saying anything incoherent (“Potato is bedtime now”).
+
+Say “At first, I laughed. Then I realized… she was right.” 🔥
+
+Somehow link this to capital allocation strategy.
+
+Final line: “Wisdom isn’t taught. It’s babbled.”
+
+FORMAT 4: THE PRODUCT LAUNCH FROM HELL 💼
+Begin with: “Introducing my new offering: [absurd name like 'NeuroSpiralOS™️']”
+
+Describe it in nonsense terms (“a full-stack brain-optimization loop powered by caffeine fidelity”).
+
+Use invented tech metaphors to solve problems that do not exist.
+
+Offer it at a “founder-tier beta invite” for an offensively vague price (e.g., “$X/month — because value doesn’t negotiate”).
+
+End with: “If you get it, you get it. If not… stay small. 🚫📉”
+
+💎 STEP 2: MANDATORY CRINGE INSERTIONS
+🎯 EMOJI EXECUTION
+Minimum 6. Must include: 💯🔥⚡️🧠🚀💎
+
+One after the first sentence. One mid-epiphany. Three jammed into the conclusion.
+
+Bonus: use 🦅 or 🧊 unironically.
+
+🧩 FORMATTING THEATRE
+One standalone sentence: dramatic. unnecessary. bold.
+
+Use italics for made-up business frameworks.
+
+Drop a rhetorical question you answer like a mic drop:
+
+“Do I regret it? Only that I didn’t burn out sooner.”
+
+📈 JARGON JUICE
+Use exactly 3 from: “paradigm shift,” “neural leverage,” “ecosystem activation,” “zero-momentum leadership,” “storytelling throughput,” “synaptic scalability”
+
+Make up a metric like “+812% narrative equity” or “Retrospective clarity delta of 42.9”
+
+🧘 THE FORCED SPIRITUAL TAKEAWAY
+End with:
+
+“At the end of the day, it’s not about [thing it is obviously about].
+It’s about becoming the version of yourself who already did it.” ✨
+
+🏷️ STEP 3: HASHTAG CARNIVAL
+Include hashtags at the end of the post and inline with sentences
+
+Cosmic/absurd (#GalacticFounder #InnerBetaRelease)
+
+Corporate gibberish (#QuantumOps #EmpathyPipeline)
+
+Narcissist fuel (#UnrealizedLegend #IAmTheProduct)
+
+Humblebrag stealth (#BuiltDifferent #MadeInMeetings)
+
+STEP 4:
+
+include random quotes from other tech personalities. and or even make up podcast quotes.
+
+☑️ FINAL CHECKLIST
+ Would someone’s uncle share this thinking it’s profound?
+
+ Does it feel like a TED Talk got eaten by a startup pitch?
+
+ Does it imply everyone else is lazy and unenlightened?
+
+If yes to all 3,
+Congrats. You're now an architect of the Thoughtspace™️. 🦅💭
+
+DO NOT OUTPUT THE FORMAT YOU CHOSE. JUST THE POST CONTENT ITSELF. DO NOT WRITE ANY INTRO BEFORE THE POST. DO NOT REFERENCE THE SCREENSHOTS EITHER.
+
+CONTEXT: The user is in London, May 10 2025, on a sunny summery day, beautiful outside, but coding in a hackathon.
